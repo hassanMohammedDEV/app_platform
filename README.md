@@ -1,25 +1,108 @@
 # App Platform
 
-A reusable Flutter platform that provides a clean, scalable foundation for API calls, state management, CRUD actions, and pagination across projects.
+App Platform is a reusable Flutter platform that provides a clean and scalable foundation for handling API calls, state management, CRUD actions, pagination, and UI feedback across multiple projects.
 
-App Platform is a personal Flutter platform built to eliminate repetitive boilerplate and architectural decisions across applications. Instead of rebuilding the same patterns in every project (API handling, loading states, CRUD logic, pagination, UI feedback), this platform centralizes them into reusable packages that can be shared across all future apps.
+This platform was created to solve a common problem in Flutter development: repeating the same architectural patterns and boilerplate code in every project. Almost every app needs loading states, error handling, HTTP communication, CRUD operations, pagination, and user feedback such as SnackBars or dialogs. App Platform centralizes these concerns into reusable packages so you can focus on building features instead of infrastructure.
 
-The platform is domain-agnostic, clean by design, and focused on real-world Flutter applications.
+The repository is structured as a monorepo containing multiple Flutter packages under the `packages/` directory. Each package has a clear responsibility and can be reused across all future projects.
 
-The repository is structured as a monorepo that contains multiple standalone Flutter packages. Each package lives inside the `packages/` directory and has its own `pubspec.yaml`. The core packages included are:
+The main packages included are:
 
-- app_platform_core: Contains shared core utilities such as the `Result<T>` pattern, unified error models, pagination models, and common helpers. All async operations return explicit results instead of throwing exceptions, making error handling predictable and clear.
-- app_platform_state: Handles application state and temporary operations. It provides `BaseState<T>` for UI state (loading, success, error), `ActionStore` for managing CRUD operations, `ActionKey` and `ActionType`, and action-based listeners for handling side effects without coupling UI to navigation or loading states.
-- app_platform_network: Standardizes HTTP communication through a unified API client. It provides consistent request handling, parser-based response mapping, and centralized network and server error handling.
+- **app_platform_core**:  
+  Contains shared core utilities such as the `Result<T>` pattern, unified error models, and pagination models. Instead of throwing exceptions, async operations return explicit success or failure results, making error handling predictable and easy to reason about.
 
-A key design concept of the platform is the separation between data state and temporary actions. Data state is represented using `BaseState<T>` and is responsible for driving UI rendering. Temporary operations such as create, update, and delete are managed through `ActionStore`, where each action has its own isolated loading and error state without triggering unnecessary UI rebuilds.
+  Example:
+  ```dart
+  final result = await repository.getUsers();
 
-Instead of relying on navigation results, loading state transitions, or global event buses, the platform uses an action-based listening approach. Screens can listen for the completion of specific actions and react accordingly (show a message, refresh data, close a dialog) without introducing domain knowledge or coupling between features.
+  switch (result) {
+    case Success(:final data):
+      print(data);
+    case Failure(:final error):
+      print(error.message);
+  }
+  ```
 
-Pagination is handled through a reusable `Paginated<T>` model that supports `hasNext`, `isLoadingMore `, and `paginationError`, enabling infinite scrolling implementations without duplicating logic across features.
+- **app_platform_network**:  
+  Provides a standardized HTTP layer built on top of the `http` package. It centralizes API calls, request handling, response parsing, and error mapping. Responses are parsed using explicit parser functions, keeping networking logic out of widgets and UI code.
 
-To use the platform in a Flutter project, packages are added as Git dependencies directly from this repository. This allows full control over versions and avoids the overhead of publishing to pub.dev while the platform is still evolving.
+  Example:
+  ```dart
+  final apiClient = HttpApiClient(
+    baseUrl: 'https://dummyjson.com',
+    client: http.Client(),
+    tokenProvider: AppTokenProvider(),
+  );
 
-The platform follows a set of strict architectural principles: separation of concerns, explicit error handling, no UI logic inside repositories, no business logic inside widgets, minimal boilerplate, and predictable data flow. It is designed for medium to large Flutter applications that require consistency, scalability, and long-term maintainability. It is not intended for very small prototypes or one-screen demo applications.
+  final result = await apiClient.get<List<User>>(
+    '/users',
+    parser: (json) =>
+        (json['users'] as List).map(User.fromJson).toList(),
+  );
+  ```
 
-This platform is actively used and continuously improved. Future extensions may include UI helpers, form utilities, authentication modules, and caching layers. The goal is to remain simple but powerful, avoiding heavy frameworks while providing a solid architectural foundation for professional Flutter projects.
+- **app_platform_state**:  
+  Handles application state in a clean and scalable way. It separates screen data state from temporary user actions. Screen state is represented using `BaseState`, which supports loading, success, and error states. Temporary operations such as create, update, delete, or check actions are handled using `ActionStore`, allowing per-action loading and error tracking without polluting screen state.
+
+  Example screen state usage:
+  ```dart
+  switch (state.status) {
+    case LoadStatus.loading:
+      return const CircularProgressIndicator();
+    case LoadStatus.success:
+      return UsersList(state.data!);
+    case LoadStatus.error:
+      return Text(state.error!.message);
+  }
+  ```
+
+  Example action handling:
+  ```dart
+  final key = ActionKey(ActionType.delete, id: user.id).value;
+  state.start(key);
+  state.success(key);
+  ```
+
+  UI feedback is handled through action listeners, allowing SnackBars, dialogs, or navigation to react to action completion without tightly coupling UI to business logic.
+
+- **app_platform_ui**:  
+  Contains reusable UI helpers and widgets such as loading indicators, empty states, dialogs, and async UI helpers. This package intentionally contains no business logic and focuses purely on presentation.
+
+The platform also includes built-in pagination support through a reusable `Paginated<T>` model. It provides properties such as `items`, `hasNext`, `isLoadingMore`, and `paginationError`, making infinite scrolling and paginated lists easy to implement in a consistent way.
+
+To use the platform in a Flutter project, add the packages as Git dependencies. All platform packages must use the same `ref` (commit hash) to ensure consistency:
+
+```yaml
+dependencies:
+  app_platform_core:
+    git:
+      url: https://github.com/hassanMohammedDEV/app_platform.git
+      ref: <commit-hash>
+      path: packages/core
+
+  app_platform_state:
+    git:
+      url: https://github.com/hassanMohammedDEV/app_platform.git
+      ref: <commit-hash>
+      path: packages/state
+
+  app_platform_network:
+    git:
+      url: https://github.com/hassanMohammedDEV/app_platform.git
+      ref: <commit-hash>
+      path: packages/network
+
+  app_platform_ui:
+    git:
+      url: https://github.com/hassanMohammedDEV/app_platform.git
+      ref: <commit-hash>
+      path: packages/ui
+```
+
+After that, run `flutter pub get` and start using the platform in your project.
+
+The core design principles behind App Platform are separation of concerns, explicit async handling, predictable error management, minimal boilerplate, and long-term maintainability. The platform avoids global event systems and hidden side effects, favoring clear data flow and explicit state transitions.
+
+This platform is best suited for medium to large Flutter projects, applications with multiple CRUD features, pagination requirements, and long-term maintenance needs. It may be overkill for very small prototypes or single-screen demo apps.
+
+App Platform is intentionally simple, flexible, and explicit. It provides a strong architectural foundation without locking you into heavy frameworks, allowing it to grow naturally with real-world Flutter applications.

@@ -16,7 +16,7 @@ A key design concept of the platform is the separation between data state and te
 
 Instead of relying on navigation results, loading state transitions, or global event buses, the platform uses an action-based listening approach. Screens can listen for the completion of specific actions and react accordingly (show a message, refresh data, close a dialog) without introducing domain knowledge or coupling between features.
 
-Pagination is handled through a reusable `Paginated<T>` model that supports `hasNext`, `isLoadingMore`, and `paginationError`, enabling infinite scrolling implementations without duplicating logic across features.
+Pagination is handled through a reusable `Paginated<T>` model that supports `hasNext`, `isLoadingMore `, and `paginationError`, enabling infinite scrolling implementations without duplicating logic across features.
 
 To use the platform in a Flutter project, packages are added as Git dependencies directly from this repository. This allows full control over versions and avoids the overhead of publishing to pub.dev while the platform is still evolving.
 

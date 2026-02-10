@@ -1,3 +1,5 @@
+import 'package:app_platform_state/src/action/action_status.dart';
+
 import 'action_state.dart';
 
 class ActionStore {
@@ -18,7 +20,7 @@ class ActionStore {
   ActionStore start(String key) {
     return ActionStore({
       ..._actions,
-      key: const ActionState(isLoading: true),
+      key: const ActionState(status: ActionStatus.success),
     });
   }
 

@@ -28,7 +28,7 @@ class ActionStore {
   ActionStore start(String key) {
     return ActionStore({
       ..._actions,
-      key: const ActionState(status: ActionStatus.success),
+      key: const ActionState(status: ActionStatus.loading),
     });
   }
 

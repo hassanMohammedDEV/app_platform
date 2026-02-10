@@ -1,4 +1,3 @@
-
 library app_platform_core;
 
 export 'src/result/result.dart';
@@ -11,3 +10,4 @@ export 'src/network/json_parser.dart';
 export 'src/pagination/pagination.dart';
 export 'src/pagination/paginated.dart';
 export 'src/pagination/pagination_mapper.dart';
+export 'src/query/query_filters.dart';

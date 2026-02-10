@@ -1,4 +1,3 @@
-import 'package:app_platform_state/src/models/reaction_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../state.dart';

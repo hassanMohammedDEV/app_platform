@@ -16,6 +16,14 @@ class ActionStore {
     return get(key).isLoading;
   }
 
+  bool isSuccess(String key) {
+    return get(key).isSuccess;
+  }
+
+  bool isFailure(String key) {
+    return get(key).isFailure;
+  }
+
   /// 🔹 ترجع نسخة جديدة
   ActionStore start(String key) {
     return ActionStore({

@@ -1,6 +1,5 @@
 import 'package:app_platform_state/state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'validator_type.dart';
 
 class FormNotifier<K extends Enum>
     extends StateNotifier<FormStateModel<K>> {

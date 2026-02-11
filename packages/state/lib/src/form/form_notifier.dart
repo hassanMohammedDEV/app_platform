@@ -1,16 +1,19 @@
-import 'package:app_platform_state/state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'form_state_model.dart';
+import 'field_state.dart';
+import 'validator_type.dart';
 
 class FormNotifier<K extends Enum>
     extends StateNotifier<FormStateModel<K>> {
-  final Map<K, Validator<dynamic>> _validators;
+  final Map<K, Validator<Object?>> _validators;
 
   FormNotifier(
       FormStateModel<K> initial, {
-        Map<K, Validator<dynamic>> validators = const {},
+        Map<K, Validator<Object?>> validators = const {},
       })  : _validators = validators,
         super(initial);
 
+  /// 🔹 تحديث حقل واحد
   void update<T>(K key, T value) {
     final validator = _validators[key];
 
@@ -27,6 +30,7 @@ class FormNotifier<K extends Enum>
     );
   }
 
+  /// 🔹 تحقق من جميع الحقول
   void validateAll() {
     final updated = <K, FieldState<dynamic>>{};
 
@@ -47,6 +51,7 @@ class FormNotifier<K extends Enum>
     state = FormStateModel<K>(fields: updated);
   }
 
+  /// 🔹 تحقق من مجموعة حقول (للـ Stepper)
   bool validateStep(List<K> keys) {
     final updated = <K, FieldState<dynamic>>{};
     bool isValid = true;
@@ -78,5 +83,16 @@ class FormNotifier<K extends Enum>
 
     return isValid;
   }
-}
 
+  /// 🔹 إعادة تعيين الفورم
+  void reset() {
+    final resetFields = <K, FieldState<dynamic>>{};
+
+    for (final entry in state.fields.entries) {
+      resetFields[entry.key] =
+          FieldState<dynamic>(value: entry.value.value);
+    }
+
+    state = FormStateModel<K>(fields: resetFields);
+  }
+}

@@ -12,8 +12,10 @@ class FormNotifier<K extends Enum>
         super(initial);
 
   void update<T>(K key, T value) {
-    final validator = _validators[key] as Validator<T>?;
-    final error = validator?.call(value);
+    final validator = _validators[key];
+
+    final error =
+    validator != null ? validator(value) : null;
 
     state = state.updateField(
       key,
@@ -33,7 +35,8 @@ class FormNotifier<K extends Enum>
       final field = entry.value;
 
       final validator = _validators[key];
-      final error = validator?.call(field.value);
+      final error =
+      validator != null ? validator(field.value) : null;
 
       updated[key] = field.copyWith(
         error: error,
@@ -53,13 +56,13 @@ class FormNotifier<K extends Enum>
       final field = entry.value;
 
       if (!keys.contains(key)) {
-        // لا نلمس الحقول خارج الخطوة الحالية
         updated[key] = field;
         continue;
       }
 
       final validator = _validators[key];
-      final error = validator?.call(field.value);
+      final error =
+      validator != null ? validator(field.value) : null;
 
       if (error != null) {
         isValid = false;
@@ -75,5 +78,5 @@ class FormNotifier<K extends Enum>
 
     return isValid;
   }
-
 }
+

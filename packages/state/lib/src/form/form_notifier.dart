@@ -1,28 +1,24 @@
+import 'package:app_platform_state/state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'field_state.dart';
-import 'form_state_model.dart';
 
 typedef Validator<T> = String? Function(T value);
 
-class FormNotifier extends StateNotifier<FormStateModel> {
-  final Map<String, Validator<dynamic>> _validators;
+class FormNotifier<K extends Enum>
+    extends StateNotifier<FormStateModel<K>> {
+  final Map<K, Validator<dynamic>> _validators;
 
   FormNotifier(
-      FormStateModel initial, {
-        Map<String, Validator<dynamic>> validators = const {},
+      FormStateModel<K> initial, {
+        Map<K, Validator<dynamic>> validators = const {},
       })  : _validators = validators,
         super(initial);
 
-  void update<T>({
-    required String name,
-    required T value,
-  }) {
-    final validator = _validators[name] as Validator<T>?;
+  void update<T>(K key, T value) {
+    final validator = _validators[key] as Validator<T>?;
     final error = validator?.call(value);
 
     state = state.updateField(
-      name,
+      key,
       FieldState<T>(
         value: value,
         error: error,
@@ -31,48 +27,53 @@ class FormNotifier extends StateNotifier<FormStateModel> {
     );
   }
 
-  /// ✅ validate all fields
   void validateAll() {
-    final updatedFields = <String, FieldState<dynamic>>{};
+    final updated = <K, FieldState<dynamic>>{};
 
     for (final entry in state.fields.entries) {
-      final name = entry.key;
+      final key = entry.key;
       final field = entry.value;
 
-      final validator = _validators[name];
+      final validator = _validators[key];
       final error = validator?.call(field.value);
 
-      updatedFields[name] = field.copyWith(
+      updated[key] = field.copyWith(
         error: error,
         touched: true,
       );
     }
 
-    state = FormStateModel(fields: updatedFields);
+    state = FormStateModel<K>(fields: updated);
   }
 
-  bool validateStep(List<String> fieldNames) {
-    final updated = {...state.fields};
+  bool validateStep(List<K> keys) {
+    final updated = <K, FieldState<dynamic>>{};
     bool isValid = true;
 
-    for (final name in fieldNames) {
-      final field = state.fields[name];
-      if (field == null) continue;
+    for (final entry in state.fields.entries) {
+      final key = entry.key;
+      final field = entry.value;
 
-      final validator = _validators[name];
+      if (!keys.contains(key)) {
+        // لا نلمس الحقول خارج الخطوة الحالية
+        updated[key] = field;
+        continue;
+      }
+
+      final validator = _validators[key];
       final error = validator?.call(field.value);
 
       if (error != null) {
         isValid = false;
       }
 
-      updated[name] = field.copyWith(
+      updated[key] = field.copyWith(
         error: error,
         touched: true,
       );
     }
 
-    state = FormStateModel(fields: updated);
+    state = FormStateModel<K>(fields: updated);
 
     return isValid;
   }

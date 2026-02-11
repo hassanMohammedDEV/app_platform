@@ -1,24 +1,24 @@
-import 'field_state.dart';
+import 'package:app_platform_state/state.dart';
 
-class FormStateModel {
-  final Map<String, FieldState<dynamic>> fields;
+class FormStateModel<K extends Enum> {
+  final Map<K, FieldState<dynamic>> fields;
 
   const FormStateModel({
     this.fields = const {},
   });
 
-  FieldState<T> field<T>(String name) {
-    return fields[name] as FieldState<T>;
+  FieldState<T> field<T>(K key) {
+    return fields[key] as FieldState<T>;
   }
 
-  FormStateModel updateField<T>(
-      String name,
+  FormStateModel<K> updateField<T>(
+      K key,
       FieldState<T> field,
       ) {
-    return FormStateModel(
+    return FormStateModel<K>(
       fields: {
         ...fields,
-        name: field,
+        key: field,
       },
     );
   }

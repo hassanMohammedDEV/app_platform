@@ -1,5 +1,5 @@
-import 'package:app_platform_state/state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'form_notifier.dart';
 
 class StepFormState {
   final int currentStep;
@@ -7,10 +7,10 @@ class StepFormState {
   const StepFormState(this.currentStep);
 }
 
-class StepFormNotifier
+class StepFormNotifier<K extends Enum>
     extends StateNotifier<StepFormState> {
-  final FormNotifier formNotifier;
-  final Map<int, List<String>> stepFields;
+  final FormNotifier<K> formNotifier;
+  final Map<int, List<K>> stepFields;
 
   StepFormNotifier({
     required this.formNotifier,

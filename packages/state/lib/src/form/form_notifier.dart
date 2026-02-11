@@ -1,20 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'form_state_model.dart';
 import 'field_state.dart';
+import 'validator_type.dart';
 
 class FormNotifier<K extends Enum>
     extends StateNotifier<FormStateModel<K>> {
-  final Map<K, String? Function(Object?)> _validators;
+  final Map<K, Validator> _validators;
 
   FormNotifier(
       FormStateModel<K> initial, {
-        Map<K, String? Function(Object?)> validators = const {},
+        Map<K, Validator> validators = const {},
       })  : _validators = validators,
         super(initial);
 
   void update<T>(K key, T value) {
     final validator = _validators[key];
-
     final error =
     validator != null ? validator(value) : null;
 

@@ -1,28 +1,29 @@
 import 'validator_type.dart';
+
 class Validators {
-  /// 🔹 Required
-  static Validator<String> required({
+  static Validator required({
     String message = 'Required',
   }) {
-    return (value) =>
-    value.trim().isEmpty ? message : null;
+    return (value) {
+      final v = (value as String?)?.trim() ?? '';
+      return v.isEmpty ? message : null;
+    };
   }
 
-  /// 🔹 Email (خفيف وعملي)
-  static Validator<String> email({
+  static Validator email({
     String message = 'Invalid email',
   }) {
     final regex =
     RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 
-    return (value) =>
-    regex.hasMatch(value.trim())
-        ? null
-        : message;
+    return (value) {
+      final v = (value as String?)?.trim() ?? '';
+      if (v.isEmpty) return null;
+      return regex.hasMatch(v) ? null : message;
+    };
   }
 
-  /// 🔹 Website URL (نسخة عملية)
-  static Validator<String> website({
+  static Validator website({
     String message = 'Invalid website',
   }) {
     final regex = RegExp(
@@ -31,66 +32,56 @@ class Validators {
     );
 
     return (value) {
-      final trimmed = value.trim();
-      if (trimmed.isEmpty) return null; // optional
-      return regex.hasMatch(trimmed)
-          ? null
-          : message;
+      final v = (value as String?)?.trim() ?? '';
+      if (v.isEmpty) return null;
+      return regex.hasMatch(v) ? null : message;
     };
   }
 
-  /// 🔹 Numeric (double)
-  static Validator<String> numeric({
+  static Validator numeric({
     String message = 'Must be a number',
   }) {
-    return (value) =>
-    double.tryParse(value.trim()) == null
-        ? message
-        : null;
+    return (value) {
+      final v = (value as String?)?.trim() ?? '';
+      if (v.isEmpty) return null;
+      return double.tryParse(v) == null
+          ? message
+          : null;
+    };
   }
 
-  /// 🔹 Integer
-  static Validator<String> integer({
-    String message = 'Must be an integer',
-  }) {
-    return (value) =>
-    int.tryParse(value.trim()) == null
-        ? message
-        : null;
-  }
-
-  /// 🔹 Min Length
-  static Validator<String> minLength(
+  static Validator minLength(
       int length, {
         String? message,
       }) {
-    return (value) =>
-    value.length < length
-        ? message ??
-        'Minimum $length characters'
-        : null;
+    return (value) {
+      final v = (value as String?) ?? '';
+      return v.length < length
+          ? message ?? 'Minimum $length characters'
+          : null;
+    };
   }
 
-  /// 🔹 Max Length
-  static Validator<String> maxLength(
+  static Validator maxLength(
       int length, {
         String? message,
       }) {
-    return (value) =>
-    value.length > length
-        ? message ??
-        'Maximum $length characters'
-        : null;
+    return (value) {
+      final v = (value as String?) ?? '';
+      return v.length > length
+          ? message ?? 'Maximum $length characters'
+          : null;
+    };
   }
 
-  /// 🔹 Range (للأرقام)
-  static Validator<String> range({
+  static Validator range({
     required num min,
     required num max,
     String? message,
   }) {
     return (value) {
-      final number = num.tryParse(value);
+      final v = (value as String?)?.trim() ?? '';
+      final number = num.tryParse(v);
       if (number == null) return null;
       if (number < min || number > max) {
         return message ??
@@ -100,34 +91,9 @@ class Validators {
     };
   }
 
-  /// 🔹 Password Strength (بسيط)
-  static Validator<String> strongPassword({
-    String message =
-    'Must contain letters and numbers',
-  }) {
-    final regex =
-    RegExp(r'^(?=.*[A-Za-z])(?=.*\d).+$');
-
-    return (value) =>
-    regex.hasMatch(value)
-        ? null
-        : message;
-  }
-
-  /// 🔹 Generic Pattern
-  static Validator<String> pattern(
-      RegExp regex, {
-        String message = 'Invalid format',
-      }) {
-    return (value) =>
-    regex.hasMatch(value)
-        ? null
-        : message;
-  }
-
-  /// 🔥 Combine (أهم دالة)
-  static Validator<T> combine<T>(
-      List<Validator<T>> validators) {
+  /// 🔥 combine بدون generic
+  static Validator combine(
+      List<Validator> validators) {
     return (value) {
       for (final validator in validators) {
         final result = validator(value);

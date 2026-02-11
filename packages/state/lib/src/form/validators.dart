@@ -1,5 +1,4 @@
-typedef Validator<T> = String? Function(T value);
-
+import 'validator_type.dart';
 class Validators {
   /// 🔹 Required
   static Validator<String> required({

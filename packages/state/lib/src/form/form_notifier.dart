@@ -50,4 +50,31 @@ class FormNotifier extends StateNotifier<FormStateModel> {
 
     state = FormStateModel(fields: updatedFields);
   }
+
+  bool validateStep(List<String> fieldNames) {
+    final updated = {...state.fields};
+    bool isValid = true;
+
+    for (final name in fieldNames) {
+      final field = state.fields[name];
+      if (field == null) continue;
+
+      final validator = _validators[name];
+      final error = validator?.call(field.value);
+
+      if (error != null) {
+        isValid = false;
+      }
+
+      updated[name] = field.copyWith(
+        error: error,
+        touched: true,
+      );
+    }
+
+    state = FormStateModel(fields: updated);
+
+    return isValid;
+  }
+
 }

@@ -1,8 +1,6 @@
 import 'package:app_platform_state/state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-typedef Validator<T> = String? Function(T value);
-
 class FormNotifier<K extends Enum>
     extends StateNotifier<FormStateModel<K>> {
   final Map<K, Validator<dynamic>> _validators;

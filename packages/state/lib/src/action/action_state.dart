@@ -2,9 +2,6 @@ import 'package:app_platform_core/core.dart';
 
 import 'action_status.dart';
 
-import 'package:app_platform_core/core.dart';
-import 'action_status.dart';
-
 class ActionState {
   final ActionStatus status;
   final AppError? error;

@@ -1,5 +1,4 @@
 import 'package:app_platform_core/core.dart';
-import 'package:app_platform_state/src/action/action_status.dart';
 
 import 'action_state.dart';
 

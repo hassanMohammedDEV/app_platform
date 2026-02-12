@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'field_state.dart';
 import 'form_state_model.dart';
 import 'validator_type.dart';
@@ -9,10 +11,10 @@ class FormNotifier<K extends Enum>
   // Sync validators
   final Map<K, Validator> _validators;
 
-  // Async validators (server side validation)
+  // Async validators (server side)
   final Map<K, AsyncValidator> _asyncValidators;
 
-  // Debounce timer
+  // Simple debounce (shared)
   Timer? _debounce;
 
   FormNotifier(
@@ -23,23 +25,28 @@ class FormNotifier<K extends Enum>
         _asyncValidators = asyncValidators,
         super(initial);
 
+  // ---------------------------------------------------------------------------
   // Update field with sync validation only
+  // ---------------------------------------------------------------------------
   void update<T>(K key, T value) {
     final validator = _validators[key];
-    final error =
+    final syncError =
     validator != null ? validator(value) : null;
 
     state = state.updateField(
       key,
       FieldState<T>(
         value: value,
-        error: error,
+        syncError: syncError,
+        asyncError: null, // clear async error on change
         touched: true,
       ),
     );
   }
 
+  // ---------------------------------------------------------------------------
   // Update field with sync + async validation (debounced)
+  // ---------------------------------------------------------------------------
   void updateAsync<T>(K key, T value) {
     // Run sync validation first
     update(key, value);
@@ -47,9 +54,7 @@ class FormNotifier<K extends Enum>
     final asyncValidator = _asyncValidators[key];
     if (asyncValidator == null) return;
 
-    // Cancel previous debounce
     _debounce?.cancel();
-
     _debounce = Timer(
       const Duration(milliseconds: 500),
           () async {
@@ -62,16 +67,16 @@ class FormNotifier<K extends Enum>
         );
 
         // Run async validation
-        final error = await asyncValidator(value);
+        final asyncError = await asyncValidator(value);
 
         final latestField =
         state.field<T>(key);
 
-        // Update field with async result
+        // Update async error
         state = state.updateField(
           key,
           latestField.copyWith(
-            error: error,
+            asyncError: asyncError,
             isValidating: false,
           ),
         );
@@ -79,7 +84,11 @@ class FormNotifier<K extends Enum>
     );
   }
 
-  // Validate all fields (used on submit)
+  // ---------------------------------------------------------------------------
+  // Validate all fields (Submit)
+  // - keeps async errors
+  // - updates only sync errors
+  // ---------------------------------------------------------------------------
   void validateAll() {
     final updated = <K, FieldState<dynamic>>{};
 
@@ -88,11 +97,11 @@ class FormNotifier<K extends Enum>
       final field = entry.value;
 
       final validator = _validators[key];
-      final error =
+      final syncError =
       validator != null ? validator(field.value) : null;
 
       updated[key] = field.copyWith(
-        error: error,
+        syncError: syncError,
         touched: true,
       );
     }
@@ -100,7 +109,11 @@ class FormNotifier<K extends Enum>
     state = FormStateModel<K>(fields: updated);
   }
 
-  // Validate only specific fields (used by stepper)
+  // ---------------------------------------------------------------------------
+  // Validate only specific fields (Stepper)
+  // - sync validation only
+  // - async errors are preserved
+  // ---------------------------------------------------------------------------
   bool validateStep(List<K> keys) {
     final updated = <K, FieldState<dynamic>>{};
     bool isValid = true;
@@ -115,15 +128,15 @@ class FormNotifier<K extends Enum>
       }
 
       final validator = _validators[key];
-      final error =
+      final syncError =
       validator != null ? validator(field.value) : null;
 
-      if (error != null) {
+      if (syncError != null) {
         isValid = false;
       }
 
       updated[key] = field.copyWith(
-        error: error,
+        syncError: syncError,
         touched: true,
       );
     }
@@ -133,7 +146,9 @@ class FormNotifier<K extends Enum>
     return isValid;
   }
 
-  // Reset form state
+  // ---------------------------------------------------------------------------
+  // Reset form
+  // ---------------------------------------------------------------------------
   void reset() {
     final resetFields = <K, FieldState<dynamic>>{};
 

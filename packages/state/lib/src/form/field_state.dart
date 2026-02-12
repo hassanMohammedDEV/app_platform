@@ -1,31 +1,48 @@
 class FieldState<T> {
   final T value;
-  final String? error;
+
+  /// Error from sync validators (required, email, numeric, ...)
+  final String? syncError;
+
+  /// Error from async validators (server, uniqueness, ...)
+  final String? asyncError;
+
   final bool touched;
   final bool isValidating;
 
   const FieldState({
     required this.value,
-    this.error,
+    this.syncError,
+    this.asyncError,
     this.touched = false,
     this.isValidating = false,
   });
 
+  /// Final error shown to the UI
+  String? get error => asyncError ?? syncError;
+
+  /// Field is valid only if:
+  /// - no sync error
+  /// - no async error
+  /// - not validating
   bool get isValid =>
-      error == null && !isValidating;
+      syncError == null &&
+          asyncError == null &&
+          !isValidating;
 
   FieldState<T> copyWith({
     T? value,
-    String? error,
+    String? syncError,
+    String? asyncError,
     bool? touched,
     bool? isValidating,
   }) {
     return FieldState<T>(
       value: value ?? this.value,
-      error: error,
+      syncError: syncError ?? this.syncError,
+      asyncError: asyncError ?? this.asyncError,
       touched: touched ?? this.touched,
-      isValidating:
-      isValidating ?? this.isValidating,
+      isValidating: isValidating ?? this.isValidating,
     );
   }
 }

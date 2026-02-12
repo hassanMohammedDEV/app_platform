@@ -26,12 +26,6 @@
       "languageVersion": "3.8"
     },
     {
-      "name": "flutter_riverpod",
-      "rootUri": "file:///Users/hassan/.pub-cache/hosted/pub.dev/flutter_riverpod-2.6.1",
-      "packageUri": "lib/",
-      "languageVersion": "2.17"
-    },
-    {
       "name": "material_color_utilities",
       "rootUri": "file:///Users/hassan/.pub-cache/hosted/pub.dev/material_color_utilities-0.11.1",
       "packageUri": "lib/",
@@ -44,34 +38,10 @@
       "languageVersion": "3.5"
     },
     {
-      "name": "path",
-      "rootUri": "file:///Users/hassan/.pub-cache/hosted/pub.dev/path-1.9.1",
-      "packageUri": "lib/",
-      "languageVersion": "3.4"
-    },
-    {
-      "name": "riverpod",
-      "rootUri": "file:///Users/hassan/.pub-cache/hosted/pub.dev/riverpod-2.6.1",
-      "packageUri": "lib/",
-      "languageVersion": "2.17"
-    },
-    {
       "name": "sky_engine",
       "rootUri": "file:///Users/hassan/Development/flutter/bin/cache/pkg/sky_engine",
       "packageUri": "lib/",
       "languageVersion": "3.8"
-    },
-    {
-      "name": "stack_trace",
-      "rootUri": "file:///Users/hassan/.pub-cache/hosted/pub.dev/stack_trace-1.12.1",
-      "packageUri": "lib/",
-      "languageVersion": "3.4"
-    },
-    {
-      "name": "state_notifier",
-      "rootUri": "file:///Users/hassan/.pub-cache/hosted/pub.dev/state_notifier-1.0.0",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
     },
     {
       "name": "vector_math",

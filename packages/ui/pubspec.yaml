@@ -6,6 +6,5 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_riverpod: ^2.0.0
   app_platform_core:
     path: ../core

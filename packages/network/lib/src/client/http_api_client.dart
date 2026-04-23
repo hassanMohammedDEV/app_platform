@@ -13,129 +13,40 @@ class HttpApiClient implements ApiClient {
   final http.Client client;
   final TokenProvider tokenProvider;
   final Duration timeout;
-  Map<String, String>? headers;
+  final Map<String, String> defaultHeaders;
 
   HttpApiClient({
     required this.baseUrl,
     required this.client,
     required this.tokenProvider,
+    this.defaultHeaders = const {},
     this.timeout = const Duration(seconds: 30),
-    this.headers
   });
 
-  // =====================================================
-  // GET
-  // =====================================================
-
   @override
-  Future<Result<T>> get<T>(
-      String path, {
-        Map<String, dynamic>? query,
-        Map<String, String>? headers,
-        required JsonParser<T> parser,
-      }) {
-    final uri = Uri.parse('$baseUrl$path')
-        .replace(queryParameters: query);
-
-    return _request(
-      method: _HttpMethod.get,
-      headers: headers,
-      uri: uri,
-      parser: parser,
-    );
+  Future<Result<T>> get<T>(String path, {Map<String, dynamic>? query, Map<String, String>? headers, required JsonParser<T> parser}) {
+    return _request(method: _HttpMethod.get, uri: Uri.parse('$baseUrl$path').replace(queryParameters: query), headers: headers, parser: parser);
   }
 
-  // =====================================================
-  // POST
-  // =====================================================
-
   @override
-  Future<Result<T>> post<T>(
-      String path, {
-        Map<String, dynamic>? body,
-        Map<String, dynamic>? query,
-        Map<String, String>? headers,
-        required JsonParser<T> parser,
-      }) {
-    final uri = Uri.parse('$baseUrl$path')
-        .replace(queryParameters: query);
-
-    return _request(
-      method: _HttpMethod.post,
-      headers: headers,
-      uri: uri,
-      body: body,
-      parser: parser,
-    );
+  Future<Result<T>> post<T>(String path, {Map<String, dynamic>? body, Map<String, dynamic>? query, Map<String, String>? headers, required JsonParser<T> parser}) {
+    return _request(method: _HttpMethod.post, uri: Uri.parse('$baseUrl$path').replace(queryParameters: query), body: body, headers: headers, parser: parser);
   }
 
-  // =====================================================
-  // PUT
-  // =====================================================
-
   @override
-  Future<Result<T>> put<T>(
-      String path, {
-        Map<String, dynamic>? body,
-        Map<String, String>? headers,
-        required JsonParser<T> parser,
-      }) {
-    final uri = Uri.parse('$baseUrl$path');
-
-    return _request(
-      method: _HttpMethod.put,
-      headers: headers,
-      uri: uri,
-      body: body,
-      parser: parser,
-    );
+  Future<Result<T>> put<T>(String path, {Map<String, dynamic>? body, Map<String, String>? headers, required JsonParser<T> parser}) {
+    return _request(method: _HttpMethod.put, uri: Uri.parse('$baseUrl$path'), body: body, headers: headers, parser: parser);
   }
 
-  // =====================================================
-  // PATCH
-  // =====================================================
-
   @override
-  Future<Result<T>> patch<T>(
-      String path, {
-        Map<String, dynamic>? body,
-        Map<String, String>? headers,
-        required JsonParser<T> parser,
-      }) {
-    final uri = Uri.parse('$baseUrl$path');
-
-    return _request(
-      method: _HttpMethod.patch,
-      headers: headers,
-      uri: uri,
-      body: body,
-      parser: parser,
-    );
+  Future<Result<T>> patch<T>(String path, {Map<String, dynamic>? body, Map<String, String>? headers, required JsonParser<T> parser}) {
+    return _request(method: _HttpMethod.patch, uri: Uri.parse('$baseUrl$path'), body: body, headers: headers, parser: parser);
   }
 
-  // =====================================================
-  // DELETE
-  // =====================================================
-
   @override
-  Future<Result<T>> delete<T>(
-      String path, {
-        required JsonParser<T> parser,
-        Map<String, String>? headers,
-      }) {
-    final uri = Uri.parse('$baseUrl$path');
-
-    return _request(
-      method: _HttpMethod.delete,
-      headers: headers,
-      uri: uri,
-      parser: parser,
-    );
+  Future<Result<T>> delete<T>(String path, {Map<String, String>? headers, required JsonParser<T> parser}) {
+    return _request(method: _HttpMethod.delete, uri: Uri.parse('$baseUrl$path'), headers: headers, parser: parser);
   }
-
-  // =====================================================
-  // CORE REQUEST
-  // =====================================================
 
   Future<Result<T>> _request<T>({
     required _HttpMethod method,
@@ -146,49 +57,26 @@ class HttpApiClient implements ApiClient {
   }) async {
     try {
       final token = await tokenProvider.getToken();
-
       final finalHeaders = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         if (token != null) 'Authorization': 'Bearer $token',
+        ...defaultHeaders,
         if (headers != null) ...headers,
       };
 
       http.Response response;
-
       Future<http.Response> send() {
         switch (method) {
-          case _HttpMethod.post:
-            return client.post(
-              uri,
-              headers: finalHeaders,
-              body: body != null ? jsonEncode(body) : null,
-            );
-
-          case _HttpMethod.put:
-            return client.put(
-              uri,
-              headers: finalHeaders,
-              body: body != null ? jsonEncode(body) : null,
-            );
-
-          case _HttpMethod.patch:
-            return client.patch(
-              uri,
-              headers: finalHeaders,
-              body: body != null ? jsonEncode(body) : null,
-            );
-
-          case _HttpMethod.delete:
-            return client.delete(uri, headers: finalHeaders);
-
-          case _HttpMethod.get:
-            return client.get(uri, headers: finalHeaders);
+          case _HttpMethod.post: return client.post(uri, headers: finalHeaders, body: body != null ? jsonEncode(body) : null);
+          case _HttpMethod.put: return client.put(uri, headers: finalHeaders, body: body != null ? jsonEncode(body) : null);
+          case _HttpMethod.patch: return client.patch(uri, headers: finalHeaders, body: body != null ? jsonEncode(body) : null);
+          case _HttpMethod.delete: return client.delete(uri, headers: finalHeaders);
+          case _HttpMethod.get: return client.get(uri, headers: finalHeaders);
         }
       }
 
       response = await send().timeout(timeout);
-
       return _handleResponse(response, parser);
     } on SocketException {
       return Failure(const NoInternetError());
@@ -199,73 +87,37 @@ class HttpApiClient implements ApiClient {
     }
   }
 
-  // =====================================================
-  // RESPONSE HANDLER
-  // =====================================================
-
-  Result<T> _handleResponse<T>(
-      http.Response response,
-      JsonParser<T> parser,
-      ) {
+  Result<T> _handleResponse<T>(http.Response response, JsonParser<T> parser) {
     final statusCode = response.statusCode;
+    final responseBody = response.body;
 
-    dynamic decoded;
-
-    if (response.body.isNotEmpty) {
-      try {
-        decoded = jsonDecode(response.body);
-      } catch (_) {
-        decoded = null;
-      }
-    }
-
-    // SUCCESS
     if (statusCode >= 200 && statusCode < 300) {
+      dynamic decoded;
+      if (responseBody.isNotEmpty) {
+        try { decoded = jsonDecode(responseBody); } catch (_) {}
+      }
       return Success(parser(decoded));
     }
 
-    // ERROR MESSAGE EXTRACTION
-    String message = 'Something went wrong';
-
-    if (decoded is Map<String, dynamic>) {
-      message =
-          decoded['message'] ??
-              decoded['error'] ??
-              message;
-    }
-
+    // سنستخدم UnknownError لتمرير الـ body إذا كانت الكلاسات الأخرى لا تقبله
+    // أو نمرر الـ body لـ ValidationError والـ ServerError
     switch (statusCode) {
       case 401:
-        return Failure(const UnauthorizedError());
-
+        return Failure(const UnauthorizedError()); // الـ const سيعمل هنا لأننا لم نمرر متغيرات
       case 403:
         return Failure(const ForbiddenError());
-
       case 404:
         return Failure(const NotFoundError());
-
       case 422:
-        return Failure(
-          ValidationError(
-            message,
-            fields: decoded?['errors'],
-          ),
-        );
-
+        dynamic decodedBody;
+        try { decodedBody = jsonDecode(responseBody); } catch (_) {}
+        // نمرر الـ body كرسالة للـ ValidationError
+        return Failure(ValidationError(responseBody, fields: decodedBody is Map ? decodedBody['errors'] : null));
       default:
-        return Failure(ServerError(statusCode, message));
+      // نمرر الـ body للـ ServerError
+        return Failure(ServerError(statusCode, responseBody));
     }
   }
 }
 
-// =====================================================
-// HTTP METHOD ENUM
-// =====================================================
-
-enum _HttpMethod {
-  get,
-  post,
-  put,
-  patch,
-  delete,
-}
+enum _HttpMethod { get, post, put, patch, delete }

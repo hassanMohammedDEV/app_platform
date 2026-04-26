@@ -4,5 +4,5 @@ class OperationState {
   final LoadStatus status;
   final String? statusMessage;
 
-  OperationState(this.status, this.statusMessage);
+  OperationState({required this.status, this.statusMessage});
 }

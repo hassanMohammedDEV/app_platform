@@ -8,7 +8,9 @@ abstract class BaseNotifier<T>
   BaseNotifier() : super(const BaseState());
 
   void setLoading() =>
-      state = BaseState(status: LoadStatus.loading);
+      state = state.copyWith(
+        status: LoadStatus.loading,
+      );
 
   void setSuccess(T data) =>
       state = BaseState(status: LoadStatus.success, data: data);

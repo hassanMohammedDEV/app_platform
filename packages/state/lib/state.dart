@@ -18,3 +18,5 @@ export 'src/form/form_notifier.dart';
 export 'src/form/step_form_controller.dart';
 export 'src/form/validators.dart';
 export 'src/form/validator_type.dart';
+export 'src/intersectors/pre_fetch_action.dart';
+export 'src/action/pre_fetch_extension.dart';

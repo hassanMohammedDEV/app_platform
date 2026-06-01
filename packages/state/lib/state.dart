@@ -22,3 +22,4 @@ export 'src/form/form_validation_state.dart';
 export 'src/form/validation_context.dart';
 export 'src/form/validation_controller.dart';
 export 'src/form/validation_field_state.dart';
+export 'src/upload/upload_state.dart';

@@ -12,3 +12,5 @@ export 'src/pagination/paginated.dart';
 export 'src/pagination/pagination_mapper.dart';
 export 'src/query/query_filters.dart';
 export 'src/status/status.dart';
+export 'src/upload/upload_file.dart';
+export 'src/upload/upload_progress.dart';
